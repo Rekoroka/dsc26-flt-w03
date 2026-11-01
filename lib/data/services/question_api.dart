@@ -24,13 +24,10 @@ class QuestionApi {
     required String studentId,
     int limit = 10,
   }) async {
-    // خطأ برمجي وليس خطأ شبكة: يُرمى قبل إرسال أي request.
     if (limit < 1 || limit > 50) {
       throw ArgumentError.value(limit, 'limit', 'must be between 1 and 50');
     }
 
-    // replace(pathSegments: ...) يشفّر كل segment: المسافة %20 و / تصبح %2F.
-    // نتجاهل الـ segments الفارغة (trailing slash) ونحتفظ بالـ base path.
     final uri = _baseUrl.replace(
       pathSegments: [
         ..._baseUrl.pathSegments.where((segment) => segment.isNotEmpty),
@@ -70,8 +67,6 @@ class QuestionApi {
     }
   }
 
-  /// فك الترميز من bytes بـ UTF-8 بغض النظر عن الـ headers (للنص العربي).
-  /// لا يرمي أي exception: أي مشكلة تتحول إلى BadResponse.
   Result<List<Question>> _parseBody(http.Response response) {
     try {
       final decoded = jsonDecode(utf8.decode(response.bodyBytes));
@@ -98,8 +93,6 @@ class QuestionApi {
     }
   }
 
-  /// أرقام صحيحة فقط ("12" أو "120"). أي شيء آخر (تاريخ HTTP، "2.5"، نص،
-  /// "+5"، سالب) يأخذ القيمة الافتراضية 5 ثوانٍ.
   Duration _parseRetryAfter(String? raw) {
     final value = raw?.trim();
     if (value == null || !RegExp(r'^\d+$').hasMatch(value)) {

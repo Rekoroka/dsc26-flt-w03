@@ -11,7 +11,6 @@ Widget buildPracticeApp({
 }) {
   return MaterialApp(
     debugShowCheckedModeBanner: false,
-    // الواجهة عربية، فنفرض اتجاه RTL (Right-To-Left) على التطبيق كله.
     builder: (context, child) =>
         Directionality(textDirection: TextDirection.rtl, child: child!),
     home: PracticeScreen(repository: repository, studentId: studentId),
@@ -42,7 +41,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
       repository: widget.repository,
       studentId: widget.studentId,
     );
-    _viewModel.load(); // تحميل واحد عند البداية
+    _viewModel.load();
   }
 
   @override
@@ -53,8 +52,6 @@ class _PracticeScreenState extends State<PracticeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // الـ Scaffold كله داخل ListenableBuilder علشان زر الـ refresh
-    // في الـ AppBar يتحدّث (يتفعّل/يتعطّل) مع تغيّر الحالة.
     return ListenableBuilder(
       listenable: _viewModel,
       builder: (context, _) {
@@ -135,8 +132,6 @@ class _PracticeScreenState extends State<PracticeScreen> {
     );
   }
 
-  // رسالة مناسبة لكل نوع failure. الـ switch exhaustive لأن ApiFailure sealed.
-  // لا نعرض toString() أبدًا حتى لا تظهر كلمة Exception.
   String _messageFor(ApiFailure failure) {
     return switch (failure) {
       Offline() || TimedOut() =>
@@ -199,17 +194,15 @@ class PracticeViewModel extends ChangeNotifier {
   final PracticeRepository _repository;
   final String _studentId;
 
-  bool _isLoading = true; // أول حالة هي loading
+  bool _isLoading = true;
   bool _disposed = false;
   Result<List<Question>>? _result;
 
   bool get isLoading => _isLoading;
   Result<List<Question>>? get result => _result;
 
-  /// التحميل الأول: الحالة loading أصلًا، فلا نحتاج notifyListeners قبل الطلب.
   Future<void> load() => _fetch();
 
-  /// تجاهل أي ضغطة أثناء التحميل، فالضغط المزدوج يرسل طلبًا واحدًا فقط.
   Future<void> refresh() async {
     if (_isLoading) return;
     _isLoading = true;
@@ -225,8 +218,6 @@ class PracticeViewModel extends ChangeNotifier {
       result = const Err(BadResponse('Unexpected error'));
     }
 
-    // الخروج من الشاشة أثناء الطلب أو أثناء انتظار الـ retry:
-    // لا نلمس الـ notifier بعد dispose.
     if (_disposed) return;
 
     _result = result;
